@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <title>Plataforma Educativa de Software Libre</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Logo de la plataforma (se ve en la pestaña del navegador) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237c6cf0'/%3E%3Cstop offset='1' stop-color='%2300c2a8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='15' fill='url(%23g)'/%3E%3Ctext x='32' y='43' font-family='Arial,Helvetica,sans-serif' font-size='28' font-weight='800' text-anchor='middle' fill='white'%3ESL%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%236c5ce7'/%3E%3Ctext x='32' y='43' font-family='Arial,Helvetica,sans-serif' font-size='28' font-weight='800' text-anchor='middle' fill='white'%3ESL%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#6c5ce7">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- Chart.js (opcional): si no hay conexión, la plataforma dibuja gráficos de respaldo en CSS -->
@@ -997,6 +1001,35 @@
     max-width:760px; margin-top:6px;
   }
 
+
+  /* ---------- PANEL LATERAL DE MÓDULOS (aprovecha el espacio de la derecha) ---------- */
+  .content-grid{ display:block; }
+  .content-aside{ display:none; }
+  @media (min-width:1360px){
+    .content-grid{ display:grid; grid-template-columns:minmax(0,760px) minmax(260px,1fr); gap:34px; align-items:start; }
+    .content-aside{
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px;
+      position:sticky; top:0; max-width:900px; max-height:calc(100vh - 80px); overflow-y:auto;
+      padding:2px 4px 6px 2px; margin-top:30px;
+    }
+  }
+  .aside-card{ background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:var(--shadow-soft); }
+  .aside-card h4{ margin:0 0 10px; font-family:'Sora',sans-serif; font-size:14px; font-weight:700; }
+  .aside-card.hero{ grid-column:1 / -1; padding:0; overflow:hidden; }
+  .aside-tiles{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:16px; }
+  .aside-tiles svg{ display:block; width:100%; height:auto; border-radius:10px; box-shadow:0 8px 18px rgba(0,0,0,.18); }
+  .aside-hero-txt{ padding:14px 18px 18px; }
+  .aside-hero-txt .k{ font-size:12px; color:var(--text-faint); font-weight:600; }
+  .aside-hero-txt .t{ font-family:'Sora',sans-serif; font-size:17px; font-weight:700; margin:3px 0 6px; }
+  .aside-hero-txt .s{ font-size:13px; color:var(--text-dim); line-height:1.55; }
+  .aside-bar{ height:9px; border-radius:99px; background:var(--panel-2); overflow:hidden; margin:6px 0 8px; }
+  .aside-bar > i{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,var(--accent),var(--accent2)); }
+  .aside-small{ font-size:12.5px; color:var(--text-dim); line-height:1.55; }
+  .aside-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+  .aside-list li{ position:relative; padding-left:16px; font-size:12.8px; line-height:1.5; color:var(--text-dim); }
+  .aside-list li::before{ content:""; position:absolute; left:0; top:7px; width:7px; height:7px; border-radius:50%; background:var(--accent2); }
+  .aside-list li b{ display:block; color:var(--text); font-size:13px; }
+  .aside-tip{ background:var(--accent3-soft); border-color:rgba(255,159,67,.35); box-shadow:none; }
 </style>
 </head>
 <body>
@@ -2157,9 +2190,14 @@ function vistaFundamentos(){
   <div class="shell">
     ${sidebarFundamentos()}
     <div class="content" id="contenidoModulo">
-      ${flujoAprendizaje(u)}
-      ${gate}
-      ${renderModuloActivo()}
+      <div class="content-grid">
+        <div class="content-main">
+          ${flujoAprendizaje(u)}
+          ${gate}
+          ${renderModuloActivo()}
+        </div>
+        ${panelLateralModulo()}
+      </div>
     </div>
   </div>
   ${esAdmin ? modalUsuariosSiCorresponde() : ""}
@@ -2181,6 +2219,82 @@ const MODULOS_FUNDAMENTOS = [
   { id: "mod7", label: "7. Seguridad y ética" },
   { id: "mod8", label: "8. Proyecto integrador" }
 ];
+
+/* ============ PANEL LATERAL DE LA VISTA DE MÓDULOS ============ */
+const CONSEJOS_MODULO = {
+  mod0: "Responde con calma: el diagnóstico no es un examen, solo ajusta el curso a tu nivel.",
+  mod1: "Antes de seguir, intenta explicar con tus palabras qué diferencia al software libre del software gratis.",
+  mod2: "Busca la licencia de un programa que uses a diario y descubre qué libertades te da.",
+  mod3: "Si puedes, prueba una distribución Linux desde un USB sin instalarla; es la mejor forma de entender la diferencia.",
+  mod4: "Elige una herramienta libre y úsala una semana en lugar de su equivalente propietario.",
+  mod5: "Piensa en tu institución: ¿qué programas pagos podrían reemplazarse con alternativas libres?",
+  mod6: "Revisa el repositorio de un proyecto libre y mira cómo se reportan y resuelven los errores.",
+  mod7: "Una buena práctica de seguridad: actualizar el sistema y revisar los permisos de tus aplicaciones.",
+  mod8: "Define una necesidad concreta y medible; los mejores proyectos parten de un problema real."
+};
+
+function panelLateralModulo(){
+  const idx = MODULOS_FUNDAMENTOS.findIndex(m => m.id === moduloActivo);
+  if(idx < 0) return "";
+  const actual = MODULOS_FUNDAMENTOS[idx];
+  const v = (typeof MODULO_VISUAL !== "undefined" && MODULO_VISUAL[moduloActivo]) || null;
+  const prog = progresoUsuario(usuarioActualObj());
+  const desbloqueado = modulosDesbloqueados();
+
+  const c1 = v ? v.c1 : "#6c5ce7", c2 = v ? v.c2 : "#00c2a8";
+  const tiles = v ? v.tiles : [["grafico","#6c5ce7","#00c2a8"],["personas","#ff9f43","#6c5ce7"],["escudo","#12b886","#1971c2"]];
+  const titulo = v ? v.titulo : "Prueba diagnóstica";
+  const sub = v ? v.sub : "Conoce tu nivel de partida y recibe una ruta de aprendizaje personalizada.";
+
+  const ideas = (v && v.galeria)
+    ? v.galeria.map(g => `<li><b>${escapeHtml(g.titulo)}</b>${escapeHtml(g.txt)}</li>`).join("")
+    : `<li><b>Responde ${DIAGNOSTICO.length} preguntas</b>Algunas miden conocimientos y otras indagan por tus hábitos de uso.</li>
+       <li><b>Conoce tu nivel</b>Recibes retroalimentación según tu resultado.</li>
+       <li><b>Desbloquea el curso</b>Al terminar se habilitan los 8 módulos de contenido.</li>`;
+
+  const sig = MODULOS_FUNDAMENTOS[idx + 1];
+  let siguiente;
+  if(!desbloqueado){
+    siguiente = `<p class="aside-small" style="margin:0;">Completa el diagnóstico para desbloquear el siguiente módulo: <b>${escapeHtml(MODULOS_FUNDAMENTOS[1].label)}</b>.</p>`;
+  }else if(sig){
+    siguiente = `<p class="aside-small" style="margin:0 0 12px;">Continúa con <b>${escapeHtml(sig.label)}</b>.</p>
+      <button class="btn" data-ir-modulo="${sig.id}">Ir al siguiente módulo</button>`;
+  }else{
+    siguiente = `<p class="aside-small" style="margin:0 0 12px;">Llegaste al último módulo. Puedes repasar cualquier tema desde el inicio.</p>
+      <button class="btn btn-outline" data-ir-modulo="mod1">Repasar desde el módulo 1</button>`;
+  }
+
+  return `
+  <aside class="content-aside" aria-label="Resumen del módulo">
+    <div class="aside-card hero">
+      <div class="aside-tiles" style="background:linear-gradient(135deg,${c1},${c2});">
+        ${tiles.map(t => svgIlustracion(t[0], t[1], t[2])).join("")}
+      </div>
+      <div class="aside-hero-txt">
+        <div class="k">Módulo ${idx + 1} de ${MODULOS_FUNDAMENTOS.length} · ${escapeHtml(actual.label)}</div>
+        <div class="t">${escapeHtml(titulo)}</div>
+        <div class="s">${escapeHtml(sub)}</div>
+      </div>
+    </div>
+    <div class="aside-card">
+      <h4>Tu avance</h4>
+      <div class="aside-bar"><i style="width:${prog.porcentaje}%;"></i></div>
+      <div class="aside-small">${prog.vistos} de ${prog.total} módulos vistos (${prog.porcentaje}%)</div>
+    </div>
+    <div class="aside-card">
+      <h4>${v ? "Ideas clave del módulo" : "Cómo funciona el diagnóstico"}</h4>
+      <ul class="aside-list">${ideas}</ul>
+    </div>
+    <div class="aside-card">
+      <h4>Siguiente paso</h4>
+      ${siguiente}
+    </div>
+    <div class="aside-card aside-tip">
+      <h4>Consejo de estudio</h4>
+      <p class="aside-small" style="margin:0;">${escapeHtml(CONSEJOS_MODULO[moduloActivo] || "")}</p>
+    </div>
+  </aside>`;
+}
 
 function sidebarFundamentos(){
   const esAdmin = sesion.rol === "Administrador";
@@ -4712,11 +4826,62 @@ async function eliminarUsuario(){
   render();
 }
 
+/* ============ PERSISTENCIA DE SESIÓN ============ */
+/* Supabase ya guarda la sesión en el navegador. El fallo era que al arrancar se llamaba
+   a signOut(), cerrando la sesión en cada recarga. Ahora se restaura la sesión y la última vista. */
+const CLAVE_ESTADO_VISTA = "sl_estado_vista";
+
+function guardarEstadoVista(){
+  try{
+    if(!sesion){ localStorage.removeItem(CLAVE_ESTADO_VISTA); return; }
+    if(["dashboard","fundamentos","estadisticas"].includes(vista)){
+      localStorage.setItem(CLAVE_ESTADO_VISTA, JSON.stringify({ uid:sesion.id, vista, moduloActivo }));
+    }
+  }catch(e){ /* almacenamiento no disponible: se ignora */ }
+}
+
+// Cada vez que se dibuja la pantalla se recuerda en qué vista/módulo está el usuario
+const __renderBase = render;
+render = function(){ __renderBase(); guardarEstadoVista(); };
+
+async function restaurarSesion(){
+  try{
+    const { data } = await sb.auth.getSession();
+    const ses = data && data.session;
+    if(!ses) return false;
+
+    await cargarUsuarios();
+    await cargarCartillaGuardada();
+    const encontrado = usuarios.find(u => u.id === ses.user.id);
+    if(!encontrado){ await sb.auth.signOut(); return false; }
+
+    sesion = { id:encontrado.id, nombre:encontrado.nombre, usuario:encontrado.usuario, rol:encontrado.rol };
+    vista = "dashboard";
+    try{
+      const g = JSON.parse(localStorage.getItem(CLAVE_ESTADO_VISTA) || "null");
+      if(g && g.uid === encontrado.id){
+        if(g.vista === "fundamentos" && MODULOS_FUNDAMENTOS.some(m => m.id === g.moduloActivo)){
+          vista = "fundamentos"; moduloActivo = g.moduloActivo;
+        }else if(g.vista === "estadisticas" && encontrado.rol === "Administrador"){
+          vista = "estadisticas";
+        }
+      }
+    }catch(e){ /* estado guardado inválido: se abre el inicio */ }
+    return true;
+  }catch(e){
+    // Sin conexión u otro error temporal: se muestra el login pero la sesión sigue guardada
+    console.error(e);
+    sesion = null; vista = "login";
+    return false;
+  }
+}
+
 /* ============ INICIO ============ */
 (async function iniciar(){
   bindDelegacionGlobal();
   if(!nubeConfigurada()) toast("Supabase sin configurar", "Edita SUPABASE_URL y SUPABASE_ANON_KEY al inicio del script.", true);
-  await sb.auth.signOut();   // igual que antes: al recargar la página se vuelve al login
+  // await sb.auth.signOut();   // igual que antes: al recargar la página se vuelve al login  (desactivado: causaba el cierre de sesión al refrescar)
+  await restaurarSesion();
   render();
 })();
 </script>
