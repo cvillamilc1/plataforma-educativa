@@ -796,6 +796,25 @@
   }
 
 
+  /* ---------- TEST FINAL (MÓDULO 8) ---------- */
+  .test-cap{
+    max-width:700px; display:flex; align-items:center; flex-wrap:wrap; gap:8px;
+    font-family:'Sora',sans-serif; font-size:15px; font-weight:700; margin:26px 0 4px;
+  }
+  .test-cap-tag{
+    font-size:11px; font-weight:700; letter-spacing:.6px; text-transform:uppercase;
+    color:var(--accent3); background:var(--accent3-soft); border-radius:14px; padding:4px 11px;
+  }
+  .test-cap-obj{ max-width:700px; font-size:12.5px; color:var(--text-dim); line-height:1.6; margin-bottom:12px; }
+  .test-estado{ display:inline-block; font-size:12.5px; font-weight:700; padding:5px 14px; border-radius:20px; }
+  .test-estado.ok{ color:var(--ok); background:var(--ok-soft); border:1px solid var(--ok); }
+  .test-estado.bad{ color:var(--danger); background:rgba(255,107,107,0.10); border:1px solid var(--danger); }
+  .test-desglose{ margin:8px 0 0; }
+  .test-desglose-row{ margin-bottom:12px; }
+  .test-desglose-top{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; color:var(--text-dim); margin-bottom:5px; }
+  .test-desglose-top b{ color:var(--text); white-space:nowrap; }
+
+
   /* ================================================================
      ==========  COMPONENTES VISUALES E INTERACTIVOS  ===============
      ================================================================ */
@@ -1729,7 +1748,7 @@ async function calificarDiagnostico(){
   const nivel = nivelPorPorcentaje(porcentaje);
 
   const recomendacion =
-    porcentaje >= 90 ? "Excelente base. Puedes avanzar directamente a los módulos de licencias, comunidades y proyecto final." :
+    porcentaje >= 90 ? "Excelente base. Puedes avanzar directamente a los módulos de licencias, comunidades y el test final." :
     porcentaje >= 70 ? "Buena base. Refuerza el módulo 2 (Licencias) para afianzar los conceptos jurídicos." :
     porcentaje >= 50 ? "Base parcial. Revisa con detenimiento los módulos 1 (Fundamentos) y 2 (Licencias)." :
                        "Se recomienda iniciar desde el módulo 1 (Fundamentos) y avanzar de forma secuencial.";
@@ -2049,35 +2068,331 @@ function renderSeccion7(){
   `;
 }
 
-/* ============ 8. PROYECTO PRÁCTICO FINAL ============ */
-function renderSeccion8(){
+/* ============ 8. TEST FINAL DEL CURSO ============ */
+const TEST_FINAL_APRUEBA = 70;   // puntaje mínimo (sobre 100) para aprobar el test
+
+/* Preguntas del test final (fuente: TEST.pdf). "c" es el índice de la opción correcta (0 = A, 1 = B, 2 = C, 3 = D). */
+const TEST_FINAL_CAPITULOS = [
+  { id:1, modulo:"mod1", titulo:"Fundamentos del software libre",
+    objetivo:"Evaluar la comprensión de los conceptos básicos del software, su historia y las cuatro libertades fundamentales.",
+    preguntas:[
+      { q:"¿Qué es el software?",
+        o:["Los componentes físicos del computador.","El conjunto de instrucciones y programas necesarios para realizar tareas.","El sistema operativo de un ordenador.","Los distintos tipos de dispositivos de almacenamiento."], c:1 },
+      { q:"¿Cuál es la diferencia entre hardware y software?",
+        o:["El hardware es físico y el software está compuesto por instrucciones y programas.","El hardware necesita conexión a internet y el software no.","El software es físico y el hardware es digital.","No existe ninguna diferencia entre ellos."], c:0 },
+      { q:"¿Qué caracteriza principalmente al software libre?",
+        o:["Siempre es gratuito y no puede comercializarse.","Solo puede utilizarse en instituciones educativas.","Respeta las libertades de usar, estudiar, modificar y redistribuir el programa.","No necesita una licencia para ser utilizado."], c:2 },
+      { q:"¿Qué es el software propietario?",
+        o:["Un programa que siempre se distribuye gratuitamente.","Un programa cuyo uso, modificación o redistribución están sujetos a restricciones establecidas por sus titulares.","Un programa que únicamente funciona en Linux.","Un programa que no tiene autor."], c:1 },
+      { q:"¿Cuál es la diferencia entre software libre y software gratuito?",
+        o:["Son exactamente iguales.","El software libre siempre es de pago.","El software gratuito siempre permite modificar el código fuente.","El software libre se define por las libertades que concede, mientras que el término gratuito se refiere al precio."], c:3 },
+      { q:"¿Qué es el código fuente?",
+        o:["El conjunto de instrucciones del programa expresadas en un lenguaje de programación legible para las personas.","El equipo físico donde se instalan los programas.","Una copia de seguridad del sistema operativo.","El resultado impreso de un programa."], c:0 },
+      { q:"¿Quién impulsó el Proyecto GNU y fue una figura fundamental del movimiento del software libre?",
+        o:["Bill Gates.","Steve Jobs.","Richard Stallman.","Tim Berners-Lee."], c:2 },
+      { q:"¿Cuál es una de las características de la FSF?",
+        o:["Fabricante de computadoras personales.","Promover y defender las libertades de los usuarios de software.","Desarrollar programas exclusivamente cerrados.","Controlar todas las distribuciones de Linux."], c:1 },
+      { q:"Un usuario quiere estudiar cómo funciona un programa y adaptarlo a sus necesidades. ¿Qué libertad del software libre se relaciona directamente con esta acción?",
+        o:["Libertad de ejecutar el programa.","Libertad de distribuir copias.","Libertad de utilizar exclusivamente el programa en una empresa.","Libertad de estudiar el funcionamiento del programa y modificarlo."], c:3 },
+      { q:"Una persona desea compartir una copia de un programa libre con sus compañeros, respetando su licencia. ¿Qué libertad fundamental está ejerciendo?",
+        o:["La libertad de ejecutar el programa.","La libertad de ocultar el código fuente.","La libertad de distribuir copias.","La libertad de impedir que otras personas lo utilicen."], c:2 }
+    ] },
+
+  { id:2, modulo:"mod2", titulo:"Licencias de software libre y de código abierto",
+    objetivo:"Comprobar que el estudiante comprende la función de las licencias, los derechos de autor y las diferencias entre software libre y código abierto.",
+    preguntas:[
+      { q:"¿Qué es una licencia de software?",
+        o:["Un componente físico necesario para ejecutar un programa.","Un documento que establece las condiciones y los permisos de uso, modificación o distribución de un programa.","Una herramienta que elimina todos los errores de una aplicación.","Una contraseña para ingresar al sistema operativo."], c:1 },
+      { q:"¿Qué protegen los derechos de autor en el ámbito del software?",
+        o:["Únicamente el precio de venta del programa.","El equipo físico donde se desarrolla la aplicación.","Los derechos reconocidos al autor sobre su obra, de acuerdo a la legislación aplicable.","Exclusivamente los datos personales de los usuarios."], c:2 },
+      { q:"¿Qué característica tiene la licencia GNU GPL?",
+        o:["Es una licencia de software libre con condiciones de copyleft para determinadas formas de distribución de obras derivadas.","Prohibición de modificar programas.","Permite utilizar el software únicamente durante 30 días.","Obliga a vender el programa a un precio determinado."], c:0 },
+      { q:"¿Cuál es la característica de la licencia MIT?",
+        o:["Prohibición de redistribución de software.","Permite utilizar el programa únicamente en Linux.","Obliga a publicar cualquier aplicación que use el programa bajo la GPL.","Es una licencia permisiva que permite amplios usos, sujetos a condiciones."], c:3 },
+      { q:"¿Qué característica distingue a la licencia Apache 2.0?",
+        o:["No permite utilizar el código fuente en proyectos.","Incluye condiciones sobre avisos de licencia y contempla disposiciones expresas relacionadas con patentes.","Solo permite utilizar el programa durante un año.","Prohibición de distribuir modificaciones."], c:1 },
+      { q:"¿Cuál es una característica general de las licencias BSD?",
+        o:["Todas exigen publicar el código fuente de cualquier programa que las utilice.","Prohibición de desarrollar programas comerciales.","Generalmente son permisivas y permiten reutilizar el código bajo determinadas condiciones.","Solo pueden utilizarse en instituciones públicas o privadas."], c:2 },
+      { q:"¿Para qué se utiliza principalmente la licencia GNU LGPL?",
+        o:["Para establecer condiciones de licencia que facilitan el uso de determinadas bibliotecas de software libre desde otros programas, incluso propietarios, bajo las condiciones aplicables.","Para impedir que las bibliotecas se utilicen en otros proyectos.","Para reemplazar todos los sistemas operativos comerciales.","Para establecer el precio obligatorio de las aplicaciones."], c:0 },
+      { q:"¿Cuál es el propósito de las licencias Creative Commons?",
+        o:["Sustituir las licencias de todos los sistemas operativos.","Garantizar que cualquier persona modifique el contenido.","Impedir que los autores compartan sus obras.","Permitir que los autores establezcan permisos de uso y distribución de sus obras mediante condiciones estandarizadas."], c:3 },
+      { q:"¿Cuál es la diferencia entre el enfoque del software libre y el del código abierto?",
+        o:["El software libre no puede tener código fuente.","El software libre puede poner énfasis en las libertades del usuario, mientras que el código abierto destaca aspectos como la disponibilidad del código y el modelo de desarrollo.","El código abierto significa que es gratuito y el software libre siempre es de pago.","El código abierto no permite modificaciones."], c:1 },
+      { q:"Una empresa desea incorporar una biblioteca con licencia libre a su aplicación. ¿Qué debería hacer antes de distribuir el producto?",
+        o:["Ignorar la licencia porque la biblioteca es libre.","Eliminar todos los avisos de autorización.","Revisar las condiciones de la licencia y cumplir las obligaciones aplicables al uso y distribución.","Asumir que todas las licencias libres tienen las mismas características."], c:2 }
+    ] },
+
+  { id:3, modulo:"mod3", titulo:"Sistemas operativos y software libre",
+    objetivo:"Evaluar los conocimientos adquiridos sobre GNU/Linux, sus distribuciones y las tareas fundamentales de administración.",
+    preguntas:[
+      { q:"¿Qué es un sistema operativo?",
+        o:["Un programa utilizado exclusivamente para editar imágenes.","Un directorio que proporciona datos.","Un servicio de almacenamiento en Internet que guarda información.","El software que administra los recursos del equipo y permite ejecutar programas."], c:3 },
+      { q:"¿Qué es GNU/Linux?",
+        o:["Una familia de sistemas operativos construidos alrededor del núcleo Linux y herramientas de software, muchas de las cuales del Proyecto GNU.","Un programa exclusivo para diseñar páginas web.","Un sistema operativo que solo funciona en teléfonos móviles.","Una aplicación de ofimática."], c:0 },
+      { q:"¿Qué es una distribución GNU/Linux?",
+        o:["Una licencia para programas comerciales.","Un formato de documento.","Un conjunto de componentes de software que ofrecen un sistema operativo utilizable.","Un dispositivo de almacenamiento externo."], c:2 },
+      { q:"¿Cuál de las siguientes opciones es una distribución GNU/Linux?",
+        o:["Microsoft Word.","Ubuntu.","Adobe Photoshop.","Microsoft Excel."], c:1 },
+      { q:"¿Qué es la terminal de GNU/Linux?",
+        o:["Una herramienta exclusiva para reproducir videos.","Una carpeta que almacena imágenes.","Un componente físico del computador.","Una interfaz que permite interactuar con el sistema operativo mediante comandos."], c:3 },
+      { q:"¿Cuál es una función del sistema de archivos?",
+        o:["Organizar y permitir el acceso a archivos y carpetas.","Determinar el precio de las aplicaciones.","Crear automáticamente cuentas de correo.","Reemplazar la memoria RAM."], c:0 },
+      { q:"¿Por qué es importante gestionar los permisos de archivos y carpetas?",
+        o:["Para aumentar el rendimiento del disco duro.","Para impedir que se instalen aplicaciones.","Para controlar qué usuarios pueden leer, modificar o ejecutar determinados recursos.","Para hacer que todos los programas se ejecuten públicamente."], c:2 },
+      { q:"¿Qué beneficios ofrecen las actualizaciones del sistema operativo?",
+        o:["Garantiza que nunca ocurrirá un problema informático.","Pueden corregir vulnerabilidades, solucionar problemas y mejorar el funcionamiento.","Eliminan automáticamente todos los archivos personales.","Impiden que las aplicaciones se ejecuten."], c:1 }
+    ] }
+];
+
+/* Lista plana de preguntas (el índice global se usa en los nombres de los campos del formulario) */
+const TEST_FINAL = [];
+TEST_FINAL_CAPITULOS.forEach(cap => cap.preguntas.forEach(p => TEST_FINAL.push({ cap:cap.id, q:p.q, o:p.o, c:p.c })));
+
+/* ---------- Resultado guardado (usuario en memoria + copia local en el navegador) ---------- */
+function claveTestFinal(){
+  return "testFinal_" + ((sesion && sesion.id) ? sesion.id : "anon");
+}
+
+function resultadoTestFinal(){
+  const u = usuarioActualObj();
+  if(u && u.testFinal) return u.testFinal;
+  try{
+    const raw = localStorage.getItem(claveTestFinal());
+    if(raw){
+      const r = JSON.parse(raw);
+      if(r && typeof r.puntaje === "number"){
+        if(u) u.testFinal = r;
+        return r;
+      }
+    }
+  }catch(e){ /* almacenamiento local no disponible: el resultado solo vive en esta sesión */ }
+  return null;
+}
+
+function nombreModuloTest(modId){
+  const m = MODULOS_FUNDAMENTOS.find(x => x.id === modId);
+  return m ? m.label : modId;
+}
+
+/* ---------- Panel de resultado ---------- */
+function panelTestFinalHtml(r, animar){
+  const aprobado = r.puntaje >= TEST_FINAL_APRUEBA;
+  const notaCls = aprobado ? "nota-aprueba" : "nota-reprueba";
+
+  const filas = TEST_FINAL_CAPITULOS.map(cap => {
+    const d = (r.porCapitulo && r.porCapitulo[cap.id]) || { correctas:0, total:cap.preguntas.length };
+    const pct = d.total ? Math.round((d.correctas / d.total) * 100) : 0;
+    return { cap, d, pct };
+  });
+
+  const desglose = filas.map(f => `
+    <div class="test-desglose-row">
+      <div class="test-desglose-top"><span>Capítulo ${f.cap.id}: ${escapeHtml(f.cap.titulo)}</span><b>${f.d.correctas} de ${f.d.total}</b></div>
+      <div class="stat-barra"><div class="stat-barra-fill" style="width:${f.pct}%"></div></div>
+    </div>`).join("");
+
+  const repasar = filas.filter(f => f.pct < TEST_FINAL_APRUEBA).map(f => nombreModuloTest(f.cap.modulo));
+  const lista = repasar.join(", ");
+
+  let mensaje;
+  if(aprobado){
+    mensaje = "¡Felicitaciones! Superaste el puntaje mínimo y aprobaste el test final del curso." +
+      (repasar.length ? ` Para afianzar lo aprendido, puedes repasar: ${lista}.` : " Dominas los tres capítulos evaluados.");
+  }else{
+    const faltan = TEST_FINAL_APRUEBA - r.puntaje;
+    mensaje = `Te faltaron ${faltan} punto(s) para aprobar. ` +
+      (repasar.length ? `Repasa ${lista} y vuelve a intentarlo.` : "Repasa los módulos 1, 2 y 3 y vuelve a intentarlo.") +
+      " Puedes presentar el test las veces que necesites.";
+  }
+
   return `
-    <div class="section-head top" id="mod8">8. Proyecto práctico final</div>
-    <div class="intro-text">Cierre práctico del curso: seleccionar una actividad cotidiana resuelta con software propietario y migrarla a una alternativa libre.</div>
-    <div class="step-grid">
-      <details class="step-card">
-        <summary><span class="step-num">1</span><span class="step-label">Identificación de una necesidad</span></summary>
-        <div class="step-body">Selección de una actividad que actualmente utiliza software propietario y análisis de requerimientos.</div>
-      </details>
-      <details class="step-card">
-        <summary><span class="step-num">2</span><span class="step-label">Búsqueda de alternativas libres</span></summary>
-        <div class="step-body">Comparación de soluciones y evaluación de funcionalidades y licencias.</div>
-      </details>
-      <details class="step-card">
-        <summary><span class="step-num">3</span><span class="step-label">Implementación</span></summary>
-        <div class="step-body">Instalación y configuración, pruebas de funcionamiento y documentación del proceso.</div>
-      </details>
-      <details class="step-card">
-        <summary><span class="step-num">4</span><span class="step-label">Presentación del proyecto</span></summary>
-        <div class="step-body">Justificación de la solución, ventajas y dificultades encontradas, demostración práctica, conclusiones y recomendaciones.</div>
-      </details>
+  <div class="nota-panel ${animar ? "resultado-anim" : ""}">
+    <div class="nota-top">
+      <div class="nota-circulo ${notaCls} ${animar ? "anim" : ""}">
+        <span class="nota-valor">${r.puntaje}</span>
+        <span class="nota-sobre">/ 100</span>
+      </div>
+      <div class="nota-resumen">
+        <div class="nota-titulo">RESULTADO DEL TEST FINAL</div>
+        <div><span class="test-estado ${aprobado ? "ok" : "bad"}">${aprobado ? "Aprobado" : "No aprobado"}</span></div>
+        <div class="nota-fecha">Último intento: ${escapeHtml(r.fecha)} · Intento n.º ${r.intentos || 1} · Mejor puntaje: ${r.mejor !== undefined ? r.mejor : r.puntaje}/100</div>
+      </div>
     </div>
 
-    <div class="note-box" style="margin-top:22px;">
-      <b>Secuencia didáctica sugerida:</b> Fundamentos → Licencias → GNU/Linux → Herramientas →
-      Aplicaciones organizacionales → Comunidades → Seguridad y ética → Proyecto final.
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--ok);">${r.correctas}</div>
+        <div class="stat-lbl">Correctas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--danger);">${r.incorrectas}</div>
+        <div class="stat-lbl">Incorrectas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">${r.puntaje}</div>
+        <div class="stat-lbl">Puntaje</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">${TEST_FINAL_APRUEBA}</div>
+        <div class="stat-lbl">Mínimo para aprobar</div>
+      </div>
     </div>
+
+    <div class="stat-barra-wrap">
+      <div class="stat-barra"><div class="stat-barra-fill" style="width:${r.puntaje}%"></div></div>
+      <div class="stat-barra-txt">${r.correctas} de ${r.total} preguntas correctas</div>
+    </div>
+
+    <div class="retro-box">
+      <div class="retro-titulo">Retroalimentación de tu test final</div>
+      <div class="retro-texto">${escapeHtml(mensaje)}</div>
+    </div>
+
+    <div class="retro-box" style="background:var(--panel-2); border-color:var(--border);">
+      <div class="retro-titulo">Desempeño por capítulo</div>
+      <div class="test-desglose">${desglose}</div>
+    </div>
+
+    <div class="aviso-intentos">Tu resultado quedó guardado en este navegador y asociado a tu usuario.</div>
+  </div>`;
+}
+
+/* ---------- Vista del módulo ---------- */
+function renderSeccion8(){
+  const previo = resultadoTestFinal();
+  const total = TEST_FINAL.length;
+
+  let n = 0;
+  const bloques = TEST_FINAL_CAPITULOS.map(cap => {
+    const preguntas = cap.preguntas.map(p => {
+      const i = n++;
+      return `
+      <div class="quiz-item" id="testItem${i}">
+        <div class="q-title">${i + 1}. ${escapeHtml(p.q)}</div>
+        ${p.o.map((op, j) => `
+        <label><input type="radio" name="test${i}" value="${j}"> ${String.fromCharCode(65 + j)}. ${escapeHtml(op)}</label>
+        `).join("")}
+        <div class="q-feedback" id="testFeedback${i}"></div>
+      </div>`;
+    }).join("");
+
+    return `
+    <div class="test-cap"><span class="test-cap-tag">Capítulo ${cap.id}</span>${escapeHtml(cap.titulo)}</div>
+    <div class="test-cap-obj">${escapeHtml(cap.objetivo)}</div>
+    ${preguntas}`;
+  }).join("");
+
+  return `
+    <div class="section-head top" id="mod8">8. Test final del curso</div>
+    <div class="intro-text">Cierre del curso: evaluación final que reúne los contenidos de fundamentos del software libre,
+      licencias y sistemas operativos libres. Léela con calma y selecciona la mejor respuesta en cada pregunta.
+    </div>
+
+    <div class="note-box" style="max-width:700px;">
+      <b>Estructura de la evaluación:</b> ${total} preguntas de selección múltiple, con 4 opciones y una sola respuesta correcta.
+      La puntuación va de 0 a 100 puntos (todas las preguntas valen lo mismo) y el test se aprueba con ${TEST_FINAL_APRUEBA}/100 puntos.
+      Debes responder todas las preguntas para poder finalizar.
+    </div>
+
+    <div id="panelTestFinal">${previo ? panelTestFinalHtml(previo) : ""}</div>
+
+    ${bloques}
+
+    <div class="quiz-actions">
+      <button class="btn" style="width:auto; padding:11px 26px;" id="btnCalificarTest">Finalizar y calificar</button>
+      <button class="btn btn-outline" style="width:auto; padding:11px 26px;" id="btnReiniciarTest">Reiniciar</button>
+    </div>
+    <div class="quiz-note">No podrás finalizar el test si quedan preguntas sin responder. Puedes volver a presentarlo; se guardará el último resultado y tu mejor puntaje.</div>
   `;
+}
+
+/* ---------- Calificación ---------- */
+function calificarTestFinal(){
+  // 1) Validación: no se permite finalizar con preguntas sin responder
+  const faltantes = [];
+  TEST_FINAL.forEach((item, i) => {
+    const sinResponder = !document.querySelector(`input[name="test${i}"]:checked`);
+    const contenedor = document.getElementById(`testItem${i}`);
+    if(contenedor) contenedor.classList.toggle("q-none", sinResponder);
+    if(sinResponder) faltantes.push(i + 1);
+  });
+  if(faltantes.length){
+    toast("Test incompleto", `No puedes finalizar el test. Te faltan ${faltantes.length} pregunta(s): ${faltantes.join(", ")}.`, true);
+    const primero = document.getElementById(`testItem${faltantes[0] - 1}`);
+    if(primero) primero.scrollIntoView({ behavior:"smooth", block:"center" });
+    return;
+  }
+
+  let correctas = 0, incorrectas = 0;
+  const porCapitulo = {};
+  TEST_FINAL_CAPITULOS.forEach(cap => { porCapitulo[cap.id] = { correctas:0, total:cap.preguntas.length }; });
+
+  TEST_FINAL.forEach((item, i) => {
+    const marcado = document.querySelector(`input[name="test${i}"]:checked`);
+    let valor = marcado ? parseInt(marcado.value, 10) : null;
+    // 2) Validación de rango: ninguna respuesta puede quedar fuera de las opciones
+    if(valor !== null && (isNaN(valor) || valor < 0 || valor >= item.o.length)) valor = null;
+
+    const feedback = document.getElementById(`testFeedback${i}`);
+    const contenedor = document.getElementById(`testItem${i}`);
+    if(contenedor) contenedor.classList.remove("q-ok", "q-bad", "q-none");
+
+    if(valor === item.c){
+      correctas++;
+      porCapitulo[item.cap].correctas++;
+      if(contenedor) contenedor.classList.add("q-ok");
+      if(feedback) feedback.innerHTML = `<span class="fb-ok">✓ Respuesta correcta</span>`;
+    }else{
+      incorrectas++;
+      if(contenedor) contenedor.classList.add("q-bad");
+      if(feedback) feedback.innerHTML = `<span class="fb-bad">✗ Incorrecta — la correcta es: ${escapeHtml(item.o[item.c])}</span>`;
+    }
+  });
+
+  const total = TEST_FINAL.length;
+  const puntaje = Math.round((correctas / total) * 100);
+  const aprobado = puntaje >= TEST_FINAL_APRUEBA;
+  const previo = resultadoTestFinal();
+
+  const resultado = {
+    puntaje, aprobado, correctas, incorrectas, total, porCapitulo,
+    intentos: ((previo && previo.intentos) || 0) + 1,
+    mejor: Math.max(puntaje, (previo && previo.mejor) || 0),
+    timestamp: Date.now(),
+    fecha: new Date().toLocaleString("es-CO", { dateStyle:"medium", timeStyle:"short" })
+  };
+
+  const u = usuarioActualObj();
+  if(u) u.testFinal = resultado;
+  try{ localStorage.setItem(claveTestFinal(), JSON.stringify(resultado)); }catch(e){ /* sin almacenamiento local */ }
+
+  const panel = document.getElementById("panelTestFinal");
+  if(panel){
+    panel.innerHTML = panelTestFinalHtml(resultado, true);
+    panel.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+
+  toast(
+    aprobado ? "Test final aprobado" : "Test final no aprobado",
+    `Puntaje ${puntaje} / 100 · ${correctas} de ${total} respuestas correctas.`,
+    !aprobado
+  );
+}
+
+function reiniciarTestFinal(){
+  TEST_FINAL.forEach((item, i) => {
+    document.querySelectorAll(`input[name="test${i}"]`).forEach(r => { r.checked = false; });
+    const fb = document.getElementById(`testFeedback${i}`);
+    if(fb) fb.innerHTML = "";
+    const cont = document.getElementById(`testItem${i}`);
+    if(cont) cont.classList.remove("q-ok", "q-bad", "q-none");
+  });
+
+  const panel = document.getElementById("panelTestFinal");
+  if(panel) panel.innerHTML = "";
+
+  toast("Test reiniciado", "Puedes responder nuevamente el test final. Tu último resultado guardado se conserva hasta que finalices un nuevo intento.");
 }
 
 function renderReferencias(){
@@ -2217,7 +2532,7 @@ const MODULOS_FUNDAMENTOS = [
   { id: "mod5", label: "5. Educación y organizaciones" },
   { id: "mod6", label: "6. Comunidades" },
   { id: "mod7", label: "7. Seguridad y ética" },
-  { id: "mod8", label: "8. Proyecto integrador" }
+  { id: "mod8", label: "8. Test final" }
 ];
 
 /* ============ PANEL LATERAL DE LA VISTA DE MÓDULOS ============ */
@@ -2230,7 +2545,7 @@ const CONSEJOS_MODULO = {
   mod5: "Piensa en tu institución: ¿qué programas pagos podrían reemplazarse con alternativas libres?",
   mod6: "Revisa el repositorio de un proyecto libre y mira cómo se reportan y resuelven los errores.",
   mod7: "Una buena práctica de seguridad: actualizar el sistema y revisar los permisos de tus aplicaciones.",
-  mod8: "Define una necesidad concreta y medible; los mejores proyectos parten de un problema real."
+  mod8: "Antes de presentar el test, repasa los módulos 1, 2 y 3. Si no apruebas, puedes volver a intentarlo."
 };
 
 function panelLateralModulo(){
@@ -2487,7 +2802,7 @@ const RUTAS_APRENDIZAJE = {
   "Avanzado": [
     "Módulo 6.3 — Repositorios, control de versiones y Git.",
     "Módulo 7 — Seguridad, ética y uso responsable.",
-    "Módulo 8 — Proyecto práctico final de migración.",
+    "Módulo 8 — Test final del curso.",
     "Aporte a un proyecto real: documentación, traducción o reporte de errores."
   ]
 };
@@ -2969,9 +3284,6 @@ const INTERACTIVO = {
   },
   mod7: {
     conceptos:["stallman","copyleft","servidores"]
-  },
-  mod8: {
-    conceptos:["programacion","colaboracion","terminal"]
   }
 };
 
@@ -3691,18 +4003,6 @@ const PROYECTOS_MODULO = {
     ],
     entregable:"Lista de verificación aplicada a tu equipo con los hallazgos y las tres acciones de mejora ejecutadas.",
     criterios:["Revisión completa","Criterio ético","Acciones aplicadas"]
-  },
-  mod8: {
-    titulo:"Proyecto 8 — Proyecto final integrador",
-    objetivo:"Integrar todo el curso migrando una actividad cotidiana del software propietario a una alternativa libre.",
-    pasos:[
-      "Identifica la necesidad y analiza los requerimientos de la actividad seleccionada.",
-      "Busca y compara alternativas libres considerando funcionalidad y licencia.",
-      "Implementa la solución: instalación, configuración, pruebas y documentación del proceso.",
-      "Presenta el proyecto con la justificación, las ventajas, las dificultades y las conclusiones."
-    ],
-    entregable:"Documento del proyecto y presentación con demostración práctica de la solución implementada.",
-    criterios:["Pertinencia de la solución","Documentación del proceso","Sustentación","Conclusiones"]
   }
 };
 
@@ -3851,20 +4151,21 @@ const MODULO_VISUAL = {
     ]
   },
   mod8: {
-    titulo:"Proyecto integrador",
-    sub:"Llevar a la práctica todo el curso migrando una actividad real.",
+    titulo:"Test final del curso",
+    sub:"Comprueba lo aprendido en fundamentos, licencias y sistemas operativos libres.",
     c1:"#ff9f43", c2:"#6c5ce7",
+    soloPanel:true,   // la galería solo alimenta el panel lateral, no se dibuja bajo el test
     tiles:[["codigo","#6c5ce7","#1971c2"],["grafico","#ff9f43","#6c5ce7"],["personas","#00c2a8","#6c5ce7"]],
     galeria:[
-      { titulo:"Diagnóstico de la necesidad", patron:"grafico", c1:"#ff9f43", c2:"#6c5ce7",
-        txt:"Qué actividad se resuelve hoy con software propietario.",
-        detalle:"Un buen proyecto parte de una necesidad concreta y medible, no de una herramienta buscada al azar." },
-      { titulo:"Implementación", patron:"ventana", c1:"#1971c2", c2:"#00c2a8",
-        txt:"Instalación, configuración y pruebas de la alternativa libre.",
-        detalle:"Documentar el proceso con capturas y anotaciones permite que otra persona repita la migración sin partir de cero." },
-      { titulo:"Sustentación", patron:"aula", c1:"#00c2a8", c2:"#1971c2",
-        txt:"Presentación de resultados, ventajas y dificultades.",
-        detalle:"La sustentación muestra la demostración práctica y las conclusiones sobre lo que funcionó y lo que no." }
+      { titulo:"Qué se evalúa", patron:"grafico", c1:"#ff9f43", c2:"#6c5ce7",
+        txt:"Fundamentos, licencias y sistemas operativos libres.",
+        detalle:"El test reúne preguntas de los tres primeros capítulos del curso: conceptos básicos, licencias y GNU/Linux." },
+      { titulo:"Cómo se califica", patron:"ventana", c1:"#1971c2", c2:"#00c2a8",
+        txt:"Puntuación de 0 a 100; todas las preguntas valen lo mismo.",
+        detalle:"Cada pregunta tiene 4 opciones y una sola respuesta correcta; la calificación se calcula automáticamente." },
+      { titulo:"Cómo se aprueba", patron:"aula", c1:"#00c2a8", c2:"#1971c2",
+        txt:"Se aprueba con 70/100 puntos; puedes volver a intentarlo.",
+        detalle:"Si no alcanzas el mínimo, repasa los capítulos con menor desempeño y presenta el test de nuevo." }
     ]
   }
 };
@@ -3888,7 +4189,7 @@ function bannerModulo(modId){
 
 function galeriaModulo(modId){
   const v = MODULO_VISUAL[modId];
-  if(!v || !v.galeria) return "";
+  if(!v || !v.galeria || v.soloPanel) return "";
   return `
   <div class="bloque-inter">
     <div class="bloque-inter-titulo">Galería del módulo</div>
@@ -4227,18 +4528,6 @@ const CHECKLISTS = {
       ["Atribución de autores","Se reconoce la autoría del software y del material reutilizado."],
       ["Copias de seguridad","La información importante está respaldada."]
     ]
-  },
-  mod8: {
-    titulo:"Lista de comprobación de la entrega final",
-    sub:"Verifica que tu proyecto integrador cumple con todos los requisitos antes de presentarlo.",
-    items:[
-      ["Necesidad identificada","Se describe la actividad y el software propietario que se usaba."],
-      ["Alternativas comparadas","Se evaluaron al menos dos opciones libres con su licencia."],
-      ["Solución implementada","La herramienta quedó instalada, configurada y probada."],
-      ["Proceso documentado","Hay capturas y pasos que permiten repetir la migración."],
-      ["Ventajas y dificultades","Se analizan los resultados obtenidos de forma honesta."],
-      ["Conclusiones y recomendaciones","El documento cierra con aportes propios."]
-    ]
   }
 };
 
@@ -4309,11 +4598,6 @@ const VF_MODULOS = {
     ["El software sin licencia suele quedar sin actualizaciones de seguridad.", true, "Es uno de sus riesgos principales, junto con la presencia de malware."],
     ["Que un programa sea libre significa que no requiere mantenimiento.", false, "La seguridad depende de mantenerlo actualizado y bien configurado."],
     ["Usar software auditable favorece la transparencia y la privacidad.", true, "Cualquiera puede revisar qué hace el programa con los datos."]
-  ],
-  mod8:[
-    ["El proyecto final debe partir de una necesidad concreta.", true, "Así la solución puede evaluarse con criterios reales."],
-    ["Basta con instalar la herramienta para dar por terminado el proyecto.", false, "También hay que probar, documentar el proceso y sustentar los resultados."],
-    ["La licencia de la alternativa elegida debe verificarse.", true, "Forma parte del análisis comparativo de las alternativas."]
   ]
 };
 
@@ -4359,7 +4643,6 @@ function componenteModulo(modId){
     case "mod5": return bloqueAntesDespues();
     case "mod6": return bloqueFlujoContribucion();
     case "mod7": return bloqueChecklist("mod7");
-    case "mod8": return bloqueChecklist("mod8");
     default: return "";
   }
 }
@@ -4551,6 +4834,11 @@ function bindEventos(){
   if(btnCalificarDiag) btnCalificarDiag.addEventListener("click", calificarDiagnostico);
   const btnReiniciarDiag = document.getElementById("btnReiniciarDiag");
   if(btnReiniciarDiag) btnReiniciarDiag.addEventListener("click", reiniciarDiagnostico);
+  // TEST FINAL (módulo 8)
+  const btnCalificarTest = document.getElementById("btnCalificarTest");
+  if(btnCalificarTest) btnCalificarTest.addEventListener("click", calificarTestFinal);
+  const btnReiniciarTest = document.getElementById("btnReiniciarTest");
+  if(btnReiniciarTest) btnReiniciarTest.addEventListener("click", reiniciarTestFinal);
   const btnContinuarCurso = document.getElementById("btnContinuarCurso");
   if(btnContinuarCurso) btnContinuarCurso.addEventListener("click", () => irAModulo("mod1"));
 
